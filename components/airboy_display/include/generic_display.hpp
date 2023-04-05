@@ -35,19 +35,21 @@ typedef struct{
 
 class GenericDisplay {
     public:
-        int height;
-        int width;
-        int clock;
-        esp_lcd_panel_io_handle_t io;
-        uint16_t *a_buffer = nullptr;
-        uint16_t *b_buffer = nullptr;
-        uint16_t *current_buffer = nullptr;
-
         GenericDisplay(int height, int width);
         ~GenericDisplay();
 
         static bool lcd_trans_done_cb(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx);
+        void init_framebuffer();
         virtual void init_bus(bus_cfg_t *config) = 0;
+        virtual void init_lcd() = 0;
+        virtual void drawFrame() = 0;
+
+        int height;
+        int width;
+        esp_lcd_panel_io_handle_t io;
+        uint16_t *a_buffer = nullptr;
+        uint16_t *b_buffer = nullptr;
+        uint16_t *current_buffer = nullptr;
 };
 
 #ifdef __cplusplus
