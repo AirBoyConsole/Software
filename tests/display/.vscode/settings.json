@@ -18,6 +18,7 @@
     "idf.flashType": "UART",
     "files.associations": {
         "typeinfo": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "regex": "cpp"
     }
 }

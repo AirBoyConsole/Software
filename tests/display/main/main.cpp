@@ -101,13 +101,18 @@ extern "C" void app_main(void)
 
     uint16_t buffer[4] = {0x4567, 0x6789, 0x3333, 0x4444};
 
-    for (int pixel = 0; pixel < 320 *240; pixel++)
+    for (int i = 0; i < 240 * 320; i++)
     {
-        display->a_buffer[pixel] = buffer[2];
+        display->a_buffer[i] = 0;
     }
 
+    for (int row = 30; row < 30 + 64; row++)
+		for (int col = 30; col < 30 + 64; col++)
+			display->a_buffer[320 * row + col] = 0x0014;//image_data_bluestone[(64 * (row - 30)) + (col - 30)];
+
     ESP_LOGI(TAG, "adress p bufora %p", &display->a_buffer);
-    ESP_LOGI(TAG, "adress k bufora %p", &display->a_buffer[240 * 320 * 2]);
+    ESP_LOGI(TAG, "adress k bufora %p", &display->a_buffer[240 * 320]);
 
     display->drawFrame();
+
 }

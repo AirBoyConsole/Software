@@ -6,15 +6,20 @@ namespace airboy
 {
     ILI9341Display::ILI9341Display(bus_cfg_t *config) : GenericDisplay(240, 320)
     {
-        esp_rom_gpio_pad_select_gpio(GPIO_NUM_2);
-        esp_rom_gpio_pad_select_gpio(GPIO_NUM_15);
-        esp_rom_gpio_pad_select_gpio((gpio_num_t)config->RST);
-        gpio_set_direction(GPIO_NUM_2, GPIO_MODE_OUTPUT);
-        gpio_set_direction(GPIO_NUM_15, GPIO_MODE_OUTPUT);
-        gpio_set_direction((gpio_num_t)config->RST, GPIO_MODE_OUTPUT);
-        gpio_set_level(GPIO_NUM_2, 0);
-        gpio_set_level(GPIO_NUM_15, 1);
-        gpio_set_level((gpio_num_t)config->RST, 1);
+        this->reset_pin = static_cast<gpio_num_t>(config->RST);
+        gpio_num_t backlight = static_cast<gpio_num_t>(config->BL);
+        gpio_num_t read = static_cast<gpio_num_t>(config->RD);
+
+        gpio_config_t io_conf;
+        memset(&io_conf, 0, sizeof(gpio_config_t));
+        io_conf.intr_type = GPIO_INTR_DISABLE;
+        io_conf.mode = GPIO_MODE_OUTPUT;
+        io_conf.pin_bit_mask = ((1ULL << backlight) | (1ULL << read) | (1ULL <<  this->reset_pin));
+        ESP_ERROR_CHECK(gpio_config(&io_conf));
+
+        gpio_set_level(backlight, 0);
+        gpio_set_level(read, 1);
+        gpio_set_level(this->reset_pin, 1);
 
         ILI9341Display::init_bus(config);
         ILI9341Display::init_framebuffer();

@@ -46,6 +46,7 @@ class GenericDisplay {
 
         int height;
         int width;
+        gpio_num_t reset_pin;
         esp_lcd_panel_io_handle_t io;
         uint16_t *a_buffer = nullptr;
         uint16_t *b_buffer = nullptr;
