@@ -84,7 +84,7 @@ extern "C" void app_main(void)
         .RST = 14,
         .RD = 15,
         .BL = 2,
-        .clock = 40000000
+        .clock = 60000000
     };
 
     ESP_LOGI(TAG, "wolne: %d", heap_caps_get_free_size(MALLOC_CAP_DMA));
@@ -101,13 +101,13 @@ extern "C" void app_main(void)
 
     uint16_t buffer[4] = {0x4567, 0x6789, 0x3333, 0x4444};
 
-    /*for (int pixel = 0; pixel < 320 *240 *2; pixel++)
+    for (int pixel = 0; pixel < 320 *240; pixel++)
     {
         display->a_buffer[pixel] = buffer[2];
-    }*/
+    }
 
     ESP_LOGI(TAG, "adress p bufora %p", &display->a_buffer);
     ESP_LOGI(TAG, "adress k bufora %p", &display->a_buffer[240 * 320 * 2]);
 
-    //display->drawFrame();
+    display->drawFrame();
 }

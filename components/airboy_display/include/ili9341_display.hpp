@@ -63,7 +63,7 @@ static const lcd_init_cmd_t vendor_specific_init[] = {
     /* VCOM control 2, VCOMH=VMH-2, VCOML=VML-2 */
     {0xC7, {0xA0}, 1},
     /* Memory access contorl, MX=MY=0, MV=1, ML=0, BGR=1, MH=0 */
-    {LCD_CMD_MADCTL, {0x20}, 1},
+    {LCD_CMD_MADCTL, {0xE8}, 1},
     /* Pixel format, 16bits/pixel for RGB/MCU interface */
     {0x3A, {0x55}, 1},  //*** INTERFACE PIXEL FORMAT: 0x66 -> 18 bit; 0x55 -> 16 bit
     /* Frame rate control, f=fosc, 70Hz fps */

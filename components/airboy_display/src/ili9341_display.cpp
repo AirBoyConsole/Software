@@ -8,45 +8,21 @@ namespace airboy
     {
         esp_rom_gpio_pad_select_gpio(GPIO_NUM_2);
         esp_rom_gpio_pad_select_gpio(GPIO_NUM_15);
+        esp_rom_gpio_pad_select_gpio((gpio_num_t)config->RST);
         gpio_set_direction(GPIO_NUM_2, GPIO_MODE_OUTPUT);
         gpio_set_direction(GPIO_NUM_15, GPIO_MODE_OUTPUT);
+        gpio_set_direction((gpio_num_t)config->RST, GPIO_MODE_OUTPUT);
         gpio_set_level(GPIO_NUM_2, 0);
         gpio_set_level(GPIO_NUM_15, 1);
+        gpio_set_level((gpio_num_t)config->RST, 1);
 
         ILI9341Display::init_bus(config);
         ILI9341Display::init_framebuffer();
-
-        //test code
-        esp_lcd_panel_handle_t panel_handle = NULL;
-        esp_lcd_panel_dev_config_t panel_config;
-        memset(&panel_config, 0, sizeof(esp_lcd_panel_dev_config_t));
-        panel_config.reset_gpio_num = config->RST;
-        panel_config.rgb_endian = LCD_RGB_ENDIAN_BGR;
-        panel_config.bits_per_pixel = 16;
-
-        for (int pixel = 0; pixel < 320 *240 *2; pixel++)
-        {
-            this->a_buffer[pixel] = 0x9999;
-        }
-
-        ESP_ERROR_CHECK(esp_lcd_new_panel_st7789(this->io, &panel_config, &panel_handle));
-        esp_lcd_panel_reset(panel_handle);
-        esp_lcd_panel_init(panel_handle);
-        esp_lcd_panel_swap_xy(panel_handle, true);
-        esp_lcd_panel_invert_color(panel_handle, true);
-    
-        for (uint8_t y = 0; y < this->height; y += 48)
-        {
-            esp_lcd_panel_draw_bitmap(panel_handle, 0, y, this->width, y + 48, &(this->a_buffer[y * this->width]));
-        }    
-
-
-        //ILI9341Display::init_lcd();
+        ILI9341Display::init_lcd();
     }
 
     void ILI9341Display::init_bus(bus_cfg_t *config)
     {
-
         spi_bus_config_t buscfg;
         memset(&buscfg, 0, sizeof(spi_bus_config_t));
         buscfg.sclk_io_num  = config->CLK;
@@ -69,7 +45,7 @@ namespace airboy
         memset(&io_config, 0, sizeof(esp_lcd_panel_io_spi_config_t));
         io_config.dc_gpio_num       = config->DC;
         io_config.cs_gpio_num       = config->CS;
-        io_config.pclk_hz           = 10 * 100 * 100;//config->clock;
+        io_config.pclk_hz           = config->clock;
         io_config.lcd_cmd_bits      = 8;
         io_config.lcd_param_bits    = 8;
         io_config.spi_mode          = 3; // fastest mode
@@ -82,6 +58,11 @@ namespace airboy
 
     void ILI9341Display::init_lcd()
     {
+        gpio_set_level((gpio_num_t)14, 0);
+        vTaskDelay(pdMS_TO_TICKS(10));
+        gpio_set_level((gpio_num_t)14, 1);
+        vTaskDelay(pdMS_TO_TICKS(10));
+
         esp_lcd_panel_io_tx_param(this->io, LCD_CMD_SLPOUT, NULL, 0);
         vTaskDelay(pdMS_TO_TICKS(100));
 
@@ -91,15 +72,18 @@ namespace airboy
             esp_lcd_panel_io_tx_param(this->io, vendor_specific_init[cmd].cmd, vendor_specific_init[cmd].data, vendor_specific_init[cmd].data_bytes & 0x1F);
             cmd++;
         }
+
+        vTaskDelay(pdMS_TO_TICKS(100));
+        esp_lcd_panel_io_tx_param(this->io, LCD_CMD_DISPON, NULL, 0);
     }
 
     void ILI9341Display::drawFrame()
     {
-        uint8_t temp[] = {0, 0, 0x01, 0,40};
+        uint8_t temp[] = {0, 0, 0x01, 0x40};
 
         ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(this->io, 0x2A, &temp, 4));
-        temp[2] = 0;
-        temp[3] = 0xF0;
+        temp[2] = 0x0F;
+        temp[3] = 0x0;
         ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(this->io, 0x2B, &temp, 4));
         // transfer frame buffer
         size_t len = 320 * 240 * 2;
