@@ -84,28 +84,21 @@ extern "C" void app_main(void)
         .RST = 14,
         .RD = 15,
         .BL = 2,
-        .clock = 60000000
+        .clock = 60000000,
+        .backlight = 255
     };
-
-    ESP_LOGI(TAG, "wolne: %d", heap_caps_get_free_size(MALLOC_CAP_DMA));
 
     airboy::GenericDisplay *display = new airboy::ILI9341Display(&config);
 
-    ESP_LOGI(TAG, "wolne: %d", heap_caps_get_free_size(MALLOC_CAP_DMA));
+    ESP_LOGI(TAG, "wolna pamięć: %d", heap_caps_get_free_size(MALLOC_CAP_DMA));
 
-    ESP_LOGI(TAG, "wejscie");
-    //ESP_LOGI(TAG, "typ %s", typeid(display->io).name());
-    ESP_LOGI(TAG, "adress %p", &display->io);
-
-    ESP_LOGI(TAG, "wiadomosc");
-
-    uint16_t buffer[4] = {0x4567, 0x6789, 0x3333, 0x4444};
-
+    //clear lcd to black (TEMPORARY)
     for (int i = 0; i < 240 * 320; i++)
     {
         display->a_buffer[i] = 0;
     }
 
+    //print to lcd (TEMPORARY)
     for (int row = 30; row < 30 + 64; row++)
 		for (int col = 30; col < 30 + 64; col++)
 			display->a_buffer[320 * row + col] = 0x0014;//image_data_bluestone[(64 * (row - 30)) + (col - 30)];
@@ -114,5 +107,13 @@ extern "C" void app_main(void)
     ESP_LOGI(TAG, "adress k bufora %p", &display->a_buffer[240 * 320]);
 
     display->drawFrame();
+    //wait some time for frame so the screen doesn't burn your eyes at night
+    vTaskDelay(20 / portTICK_PERIOD_MS);
 
+    //backlight test fade out
+    for (int i = 0; i < 255; i++)
+    {
+        display->set_backlight_level(i);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
 }
