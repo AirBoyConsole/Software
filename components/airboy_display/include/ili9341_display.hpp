@@ -29,7 +29,7 @@ typedef struct {
     uint8_t data_bytes; // Length of data in above data array; 0xFF = end of cmds.
 } lcd_init_cmd_t;
 
-static const lcd_init_cmd_t vendor_specific_init[] = {
+const lcd_init_cmd_t vendor_specific_init[] = {
     /* SW reset */
     {LCD_CMD_SWRESET, {0}, 0},
     /* 200 ms delay */
