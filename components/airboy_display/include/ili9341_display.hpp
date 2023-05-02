@@ -99,11 +99,11 @@ const lcd_init_cmd_t vendor_specific_init[] = {
 class ILI9341Display : public GenericDisplay 
 {
     public:
-        ILI9341Display(bus_cfg_t *config);
+        ILI9341Display(display_bus_cfg_t *config);
         void drawFrame();
 
     private:
-        void init_bus(bus_cfg_t *config);
+        void init_bus(display_bus_cfg_t *config);
         void init_lcd();
 };
 

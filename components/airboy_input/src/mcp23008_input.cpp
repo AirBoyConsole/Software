@@ -2,13 +2,13 @@
 
 namespace airboy 
 {
-    MCP23008Input::MCP23008Input(uint8_t interrupt_pin, i2c_port_t port, uint8_t chip_0_address, uint8_t chip_1_address) : Input()
+    MCP23008Input::MCP23008Input(i2c_port_t port, input_bus_cfg_t *conf) : Input()
     {
-        this->chip_0_address = chip_0_address;
-        this->chip_1_address = chip_1_address;
+        this->chip_0_address = conf->addres_0;
+        this->chip_1_address = conf->addres_1;
 
         this->port = port;
-        this->interrupt = static_cast<gpio_num_t>(interrupt_pin);
+        this->interrupt = static_cast<gpio_num_t>(conf->interrupt);
         init_input();
     }
 
@@ -26,7 +26,7 @@ namespace airboy
 
         if (ret != ESP_OK) 
         {
-            ESP_LOGE(TAG, "Error one reading register %d", reg_addr);
+            ESP_LOGE(INPUT_TAG, "Error one reading register %d", reg_addr);
             return ESP_FAIL;
         }
 
@@ -42,7 +42,7 @@ namespace airboy
 
         if (ret != ESP_OK) 
         {
-            ESP_LOGE(TAG, "Error two reading register %d", reg_addr);
+            ESP_LOGE(INPUT_TAG, "Error two reading register %d", reg_addr);
             return ESP_FAIL;
         }
 
@@ -64,7 +64,7 @@ namespace airboy
 
         if (ret != ESP_OK) 
         {
-            ESP_LOGE(TAG, "Error writing register at address %d", reg_addr);
+            ESP_LOGE(INPUT_TAG, "Error writing register at address %d", reg_addr);
             return ESP_FAIL;
         }
 
@@ -87,10 +87,10 @@ namespace airboy
 
         // initialize expanders registers from predefined array
         uint8_t cmd = 0;
-        while(vendor_specific_init[cmd].address != 0xff)
+        while(input_vendor_specific_init[cmd].address != 0xff)
         {
-            ESP_ERROR_CHECK(register_write(this->chip_0_address, vendor_specific_init[cmd].address, vendor_specific_init[cmd].data));
-            ESP_ERROR_CHECK(register_write(this->chip_1_address, vendor_specific_init[cmd].address, vendor_specific_init[cmd].data));
+            ESP_ERROR_CHECK(register_write(this->chip_0_address, input_vendor_specific_init[cmd].address, input_vendor_specific_init[cmd].data));
+            ESP_ERROR_CHECK(register_write(this->chip_1_address, input_vendor_specific_init[cmd].address, input_vendor_specific_init[cmd].data));
             cmd++;
         }
 
@@ -98,6 +98,6 @@ namespace airboy
         read_input();
 
         // create task that handles input
-        xTaskCreate(input_task, "get-input", 2048, this, 10, &input_handle);
+        xTaskCreatePinnedToCore(input_task, "get-input", 2048, this, 10, &input_handle, tskNO_AFFINITY);
     }
 }

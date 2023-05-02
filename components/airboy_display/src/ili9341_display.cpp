@@ -4,7 +4,7 @@
 
 namespace airboy 
 {
-    ILI9341Display::ILI9341Display(bus_cfg_t *config) : GenericDisplay(240, 320)
+    ILI9341Display::ILI9341Display(display_bus_cfg_t *config) : GenericDisplay(240, 320)
     {
         this->reset_pin = static_cast<gpio_num_t>(config->RST);
         gpio_num_t backlight = static_cast<gpio_num_t>(config->BL);
@@ -26,7 +26,7 @@ namespace airboy
         ILI9341Display::init_backlight(backlight, config->backlight);
     }
 
-    void ILI9341Display::init_bus(bus_cfg_t *config)
+    void ILI9341Display::init_bus(display_bus_cfg_t *config)
     {
         spi_bus_config_t buscfg;
         memset(&buscfg, 0, sizeof(spi_bus_config_t));
@@ -93,5 +93,7 @@ namespace airboy
         // transfer frame buffer
         size_t len = 320 * 240 * 2;
         ESP_ERROR_CHECK(esp_lcd_panel_io_tx_color(this->io, 0x2C, this->a_buffer, len));
+
+        vTaskSuspend(NULL);
     }
 }

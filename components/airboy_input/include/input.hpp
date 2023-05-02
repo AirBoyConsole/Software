@@ -13,11 +13,20 @@
 
 namespace airboy {
 
-#define TAG "Input"
+#define INPUT_TAG "Input"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Configuration struct
+ */
+typedef struct{
+    uint8_t interrupt;
+    uint8_t addres_0;
+    uint8_t addres_1;
+}input_bus_cfg_t;
 
 /**
  * @brief Enum of button id

@@ -26,7 +26,13 @@ extern "C" void app_main(void)
     i2c_param_config(INPUT_I2C_PORT, &conf);
     ESP_ERROR_CHECK(i2c_driver_install(INPUT_I2C_PORT, conf.mode, 0, 0, 0));
 
-    airboy::Input *input = new airboy::MCP23008Input(38, INPUT_I2C_PORT, 0x20, 0x21);
+    airboy::input_bus_cfg_t config{
+        .interrupt = 38,
+        .addres_0 = 0x20,
+        .addres_1 = 0x21
+    };
+
+    airboy::Input *input = new airboy::MCP23008Input(INPUT_I2C_PORT, &config);
 
     while (true)
     {
@@ -35,6 +41,6 @@ extern "C" void app_main(void)
         ESP_LOGI(TAG, "just_released value: %d", input->is_just_released(airboy::Buttons::BUTTON_DPAD_UP));
 
         input->reset_previous();
-        vTaskDelay(5);
+        vTaskDelay(10);
     }
 }

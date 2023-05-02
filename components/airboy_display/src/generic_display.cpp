@@ -2,10 +2,14 @@
 
 namespace airboy 
 {
+    TaskHandle_t GenericDisplay::display_handle;
+
     GenericDisplay::GenericDisplay(int height, int width)
     {
         this->height = height;
         this->width = width;
+
+        display_handle = xTaskGetCurrentTaskHandle();
     }
 
     GenericDisplay::~GenericDisplay()
@@ -17,7 +21,7 @@ namespace airboy
     bool GenericDisplay::lcd_trans_done_cb(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx)
     {
         BaseType_t woken = true;
-        //ESP_LOGI("dupa", "koniec");
+        vTaskResume(display_handle);
         return woken;
     }
 

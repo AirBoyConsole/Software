@@ -28,7 +28,7 @@ typedef struct {
 /**
  * @brief array of init commands
  */
-const input_init_cmd_t vendor_specific_init[] = {
+const input_init_cmd_t input_vendor_specific_init[] = {
     /* IODIR */
     {0x00, 0xFF},
     /* IPOL */
@@ -48,7 +48,7 @@ const input_init_cmd_t vendor_specific_init[] = {
 class MCP23008Input : public Input 
 {
     public:
-        MCP23008Input(uint8_t interrupt_pin, i2c_port_t port, uint8_t chip_0_address, uint8_t chip_1_address);
+        MCP23008Input(i2c_port_t port, input_bus_cfg_t *conf);
 
     private:
         void init_input();        

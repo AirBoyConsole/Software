@@ -7,6 +7,7 @@ namespace airboy
     Input::Input()
     {
         this->input_semaphore = xSemaphoreCreateMutex();
+        assert(this->input_semaphore);
     }
 
     gpio_num_t Input::get_interrupt_pin()
@@ -42,20 +43,20 @@ namespace airboy
                 if (natified_value > 0)
                 {
                     input->block_input();
-                    do{
-                        input->read_input();
-                    }while(gpio_get_level(input->get_interrupt_pin()));
+                        do{
+                            input->read_input();
+                        }while(!gpio_get_level(input->get_interrupt_pin()));
                     input->unblock_input();
                 }    
                 else
                 {
-                    ESP_LOGI(TAG, "notified value 0");
+                    ESP_LOGI(INPUT_TAG, "notified value 0");
                 }                  
             }
         }
 
-        ESP_LOGE(TAG, "Pointer error!");
-        ESP_LOGE(TAG, "task is deleted");
+        ESP_LOGE(INPUT_TAG, "Pointer error!");
+        ESP_LOGE(INPUT_TAG, "task is deleted");
         vTaskDelete(NULL);
     }
 
