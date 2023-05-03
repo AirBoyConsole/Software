@@ -11,7 +11,7 @@
 #include "esp_log.h"
 
 #include "input.hpp"
-#include "generic_display.hpp"
+#include "display.hpp"
 
 #define EEPROM_TAG "eeprom"
 

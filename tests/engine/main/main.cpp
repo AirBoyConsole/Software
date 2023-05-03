@@ -8,7 +8,7 @@
 
 #include "input.hpp"
 #include "mcp23008_input.hpp"
-#include "generic_display.hpp"
+#include "display.hpp"
 #include "ili9341_display.hpp"
 #include "engine.hpp"
 
@@ -17,16 +17,16 @@
 class Example : public airboy::Engine
 {
 public:
-	bool setup() override
+	void setup() override
 	{
 		// Called once at the start, so create things here
-		return true;
 	}
-	bool update(float delta) override
-	{
-		ESP_LOGI(APP_TAG, "pressed value: %d", input->is_just_pressed(airboy::Buttons::BUTTON_DPAD_UP));
 
-		return true;
+	void update(float delta) override
+	{
+		ESP_LOGI(APP_TAG, "pressed value: %f", delta);
+		this->display->clear_buffer();
+
 	}
 };
 

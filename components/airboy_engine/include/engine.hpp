@@ -10,10 +10,11 @@
 #include "driver/i2c.h"
 #include "esp_check.h"
 #include "esp_log.h"
+#include "esp_timer.h"
 
 #include "input.hpp"
 #include "mcp23008_input.hpp"
-#include "generic_display.hpp"
+#include "display.hpp"
 #include "ili9341_display.hpp"
 #include "internal_bus.hpp"
 #include "internal_eeprom.hpp"
@@ -32,14 +33,14 @@ public:
     Engine();
     ~Engine();
 
-    virtual bool setup() = 0;
-    virtual bool update(float delta) = 0;
+    virtual void setup() = 0;
+    virtual void update(float delta) = 0;
     bool construct();
     void run();
 
 protected:
     Input *input = nullptr;
-    GenericDisplay *display = nullptr;
+    Display *display = nullptr;
     InternalEEprom *eeprom = nullptr;
 
 private:

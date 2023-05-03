@@ -49,10 +49,15 @@ namespace airboy
     void Engine::run()
     {
         float delta = 0;
+        uint64_t time = 0, oldtime = 0;
         setup();
 
         while(true)
         {
+            oldtime = time;
+            time = esp_timer_get_time();
+            delta = (time - oldtime) / 1000000.0;
+
             input->block_input();
 
             update(delta);
@@ -61,9 +66,8 @@ namespace airboy
 
             input->unblock_input();
 
-            display->drawFrame();
+            display->draw_frame();
 
-            vTaskDelay(10);
         }
     }
 }

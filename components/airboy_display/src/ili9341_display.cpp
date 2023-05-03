@@ -1,12 +1,10 @@
 #include "ili9341_display.hpp"
-#include "driver/gpio.h"
-#include <cstring>
 
 namespace airboy 
 {
-    ILI9341Display::ILI9341Display(display_bus_cfg_t *config) : GenericDisplay(240, 320)
+    ILI9341Display::ILI9341Display(display_bus_cfg_t *config) : Display(240, 320)
     {
-        this->reset_pin = static_cast<gpio_num_t>(config->RST);
+        gpio_num_t reset_pin = static_cast<gpio_num_t>(config->RST);
         gpio_num_t backlight = static_cast<gpio_num_t>(config->BL);
         gpio_num_t read = static_cast<gpio_num_t>(config->RD);
 
@@ -14,15 +12,16 @@ namespace airboy
         memset(&io_conf, 0, sizeof(gpio_config_t));
         io_conf.intr_type = GPIO_INTR_DISABLE;
         io_conf.mode = GPIO_MODE_OUTPUT;
-        io_conf.pin_bit_mask = ((1ULL << read) | (1ULL <<  this->reset_pin));
+        io_conf.pin_bit_mask = ((1ULL << read) | (1ULL <<  reset_pin));
         ESP_ERROR_CHECK(gpio_config(&io_conf));
 
-        gpio_set_level(read, 1);
-        gpio_set_level(this->reset_pin, 1);
+        gpio_set_level(read, true);
+        gpio_set_level(reset_pin, true);
 
         ILI9341Display::init_bus(config);
         ILI9341Display::init_framebuffer();
-        ILI9341Display::init_lcd();
+        //ILI9341Display::clear_buffer();
+        ILI9341Display::init_lcd(reset_pin);
         ILI9341Display::init_backlight(backlight, config->backlight);
     }
 
@@ -61,15 +60,14 @@ namespace airboy
         ESP_ERROR_CHECK(esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)LCD_HOST, &io_config, &this->io));
     }
 
-    void ILI9341Display::init_lcd()
+    void ILI9341Display::init_lcd(gpio_num_t reset)
     {
-        gpio_set_level((gpio_num_t)14, 0);
+        gpio_set_level(reset, false);
         vTaskDelay(pdMS_TO_TICKS(10));
-        gpio_set_level((gpio_num_t)14, 1);
+        gpio_set_level(reset, true);
         vTaskDelay(pdMS_TO_TICKS(10));
 
         esp_lcd_panel_io_tx_param(this->io, LCD_CMD_SLPOUT, NULL, 0);
-        vTaskDelay(pdMS_TO_TICKS(100));
 
         int cmd = 0;
         while (vendor_specific_init[cmd].data_bytes != 0xff) 
@@ -78,22 +76,25 @@ namespace airboy
             cmd++;
         }
 
-        vTaskDelay(pdMS_TO_TICKS(100));
+        //ILI9341Display::draw_frame();
+
         esp_lcd_panel_io_tx_param(this->io, LCD_CMD_DISPON, NULL, 0);
     }
 
-    void ILI9341Display::drawFrame()
+    void ILI9341Display::draw_frame()
     {
-        uint8_t temp[] = {0, 0, 0x01, 0x40};
+        // send col address to display
+        static const uint8_t col_address[] = {0, 0, 0x01, 0x40};
+        ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(this->io, 0x2A, &col_address, 4));
 
-        ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(this->io, 0x2A, &temp, 4));
-        temp[2] = 0x0F;
-        temp[3] = 0x0;
-        ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(this->io, 0x2B, &temp, 4));
+        // send row address to display
+        static const uint8_t row_address[] = {0, 0, 0x0F, 0x00};
+        ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(this->io, 0x2B, &row_address, 4));
+
         // transfer frame buffer
-        size_t len = 320 * 240 * 2;
-        ESP_ERROR_CHECK(esp_lcd_panel_io_tx_color(this->io, 0x2C, this->a_buffer, len));
+        ESP_ERROR_CHECK(esp_lcd_panel_io_tx_color(this->io, 0x2C, this->frame_buffer, 320 * 240 * 2));
 
+        // suspend task until frame is send
         vTaskSuspend(NULL);
     }
 }

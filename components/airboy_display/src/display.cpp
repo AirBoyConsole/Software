@@ -1,10 +1,10 @@
-#include "generic_display.hpp"
+#include "display.hpp"
 
 namespace airboy 
 {
-    TaskHandle_t GenericDisplay::display_handle;
+    TaskHandle_t Display::display_handle;
 
-    GenericDisplay::GenericDisplay(int height, int width)
+    Display::Display(int height, int width)
     {
         this->height = height;
         this->width = width;
@@ -12,28 +12,24 @@ namespace airboy
         display_handle = xTaskGetCurrentTaskHandle();
     }
 
-    GenericDisplay::~GenericDisplay()
+    Display::~Display()
     {
-        if (a_buffer != nullptr) delete [] a_buffer;
-        if (b_buffer != nullptr) delete [] b_buffer;
+        if (frame_buffer != nullptr) delete [] frame_buffer;
     }
 
-    bool GenericDisplay::lcd_trans_done_cb(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx)
+    bool Display::lcd_trans_done_cb(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx)
     {
         BaseType_t woken = true;
         vTaskResume(display_handle);
         return woken;
     }
 
-    void GenericDisplay::init_framebuffer()
+    void Display::init_framebuffer()
     {
-        // TO DO: double buffering
-
-        this->a_buffer = static_cast<uint16_t *>(heap_caps_malloc(this->width * this->height * sizeof(uint16_t), MALLOC_CAP_DMA));
-        this->current_buffer = this->a_buffer;
+        this->frame_buffer = static_cast<uint16_t *>(heap_caps_malloc(this->width * this->height * sizeof(uint16_t), MALLOC_CAP_DMA));
     }
 
-    void GenericDisplay::init_backlight(gpio_num_t bl, uint32_t duty)
+    void Display::init_backlight(gpio_num_t bl, uint32_t duty)
     {
         ledc_timer_config_t backlight_timer;
         memset(&backlight_timer, 0, sizeof(ledc_timer_config_t));
@@ -56,7 +52,7 @@ namespace airboy
         ESP_ERROR_CHECK(ledc_channel_config(&backlight_channel));
     }
 
-    void GenericDisplay::set_backlight_level(uint8_t value)
+    void Display::set_backlight_level(uint8_t value)
     {
         ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, value));
         ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_CHANNEL));

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <cstring>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -15,7 +16,7 @@
 #include "esp_log.h"
 #include "esp_check.h"
 
-#include "generic_display.hpp"
+#include "display.hpp"
 
 namespace airboy {
 
@@ -96,15 +97,15 @@ const lcd_init_cmd_t vendor_specific_init[] = {
     {0, {0}, 0xff},
 };
 
-class ILI9341Display : public GenericDisplay 
+class ILI9341Display : public Display 
 {
     public:
         ILI9341Display(display_bus_cfg_t *config);
-        void drawFrame();
+        void draw_frame();
 
     private:
         void init_bus(display_bus_cfg_t *config);
-        void init_lcd();
+        void init_lcd(gpio_num_t reset);
 };
 
 #ifdef __cplusplus
