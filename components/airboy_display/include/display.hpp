@@ -44,32 +44,18 @@ class Display {
         Display(int height, int width);
         ~Display();
 
-        void set_backlight_level(uint8_t value);
-
         virtual void draw_frame() = 0;
 
-        inline void IRAM_ATTR clear_buffer(uint16_t color)
-        {
-            for (int i = 0; i < 240 * 320; i++) this->frame_buffer[i] = color;
-        }
+        void set_backlight_level(uint8_t value);
+        void clear_buffer(uint16_t color);
+        void clear_buffer();
+        void clear_rect(int x, int y, int w, int h, uint16_t color);
+        void set_pixel(int x, int y, uint16_t color);
+        void set_pixel_fast(int x, int y, uint16_t color);
 
-        inline void IRAM_ATTR set_pixel(int x, int y, uint16_t color)
-        {
-            if ((x < 0) || (x > this->width) || (y < 0) || (y > this->height)) return;
-            this->frame_buffer[this->width * y + x] = color;
-        }
-
-        inline void IRAM_ATTR clear_buffer()
-        {
-            memset(this->frame_buffer, 0, this->height * this->width * 2);
-        }
-
-        inline void IRAM_ATTR set_pixel_fast(int x, int y, uint16_t color)
-        {
-            this->frame_buffer[this->width * y + x] = color;
-        }
-
+#ifdef ENGINE_SPECIAL_OPTIMALIZATION
         uint16_t *frame_buffer = nullptr;
+#endif
         
     protected:
         virtual void init_bus(display_bus_cfg_t *config) = 0;
@@ -79,16 +65,45 @@ class Display {
 
         void init_framebuffer();
         void init_backlight(gpio_num_t bl, uint32_t duty);
-
-        static TaskHandle_t display_handle;
         
+        static TaskHandle_t display_handle;
         esp_lcd_panel_io_handle_t io;
+
+#ifndef ENGINE_SPECIAL_OPTIMALIZATION
+        uint16_t *frame_buffer = nullptr;
+#endif
 
         int height;
         int width;
 };
 
+inline void Display::clear_buffer(uint16_t color)
+{
+    for (int i = 0; i < 240 * 320; i++) this->frame_buffer[i] = color;
+}
 
+inline void Display::clear_buffer()
+{
+    memset(this->frame_buffer, 0, this->height * this->width * 2);
+}
+
+inline void Display::clear_rect(int x, int y, int w, int h, uint16_t color)
+{
+    for (int row = y; row < y + h; row++)
+		for (int col = x; col < x + w; col++)
+			this->frame_buffer[this->width * row + col] = color;
+}
+
+inline void Display::set_pixel(int x, int y, uint16_t color)
+{
+    if ((x < 0) || (x > this->width) || (y < 0) || (y > this->height)) return;
+    this->frame_buffer[this->width * y + x] = color;
+}
+
+inline void Display::set_pixel_fast(int x, int y, uint16_t color)
+{
+    this->frame_buffer[this->width * y + x] = color;
+}
 
 #ifdef __cplusplus
 }

@@ -9,6 +9,13 @@
         "utility": "cpp",
         "system_error": "cpp",
         "type_traits": "cpp",
-        "xtr1common": "cpp"
+        "xtr1common": "cpp",
+        "cmath": "cpp",
+        "cstdlib": "cpp",
+        "xlocnum": "cpp",
+        "xlocale": "cpp",
+        "iosfwd": "cpp",
+        "iterator": "cpp",
+        "vector": "cpp"
     }
 }

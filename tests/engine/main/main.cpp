@@ -6,11 +6,12 @@
 #include "esp_check.h"
 #include "driver/i2c.h"
 
+#include "vector2.hpp"
+
 #include "input.hpp"
-#include "mcp23008_input.hpp"
 #include "display.hpp"
-#include "ili9341_display.hpp"
 #include "engine.hpp"
+#include "math.hpp"
 
 #define APP_TAG "App"
 
@@ -26,7 +27,6 @@ public:
 	{
 		ESP_LOGI(APP_TAG, "pressed value: %f", delta);
 		this->display->clear_buffer();
-
 	}
 };
 
