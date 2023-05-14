@@ -33,7 +33,7 @@ public:
 extern "C" void app_main(void)
 {
     Example demo;
-	if (demo.construct())
+	if (demo.construct(10))
 		demo.run();
 	else ESP_LOGE(APP_TAG, "Construct error");
 }

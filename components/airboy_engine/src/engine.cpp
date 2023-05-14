@@ -6,7 +6,7 @@ namespace airboy
     Engine::Engine() {}
     Engine::~Engine() {}
 
-    bool Engine::construct()
+    bool Engine::construct(int fps_target)
     {
         //cerate internal i2c bus
         internal_bus = new InternalBus();
@@ -32,6 +32,8 @@ namespace airboy
         }
         if (display == nullptr) return false;
 
+        renderer = new Renderer(display, Vector2i(320, 240));
+
         switch (eeprom->get_input_type())
         {
             case 0:
@@ -43,6 +45,8 @@ namespace airboy
         }
         if (input == nullptr) return false;
 
+        this->set_fps_target(fps_target);
+
         return true;
     }
 
@@ -52,6 +56,7 @@ namespace airboy
         uint64_t time = 0, oldtime = 0;
         setup();
 
+        fps_target_last_time = xTaskGetTickCount();
         while(true)
         {
             oldtime = time;
@@ -68,6 +73,19 @@ namespace airboy
 
             display->draw_frame();
 
+            if(this->fps_target != 0) vTaskDelayUntil(&fps_target_last_time, this->fps_target);
         }
+    }
+
+    void Engine::set_fps_target(int target)
+    {
+        //avoid devide by 0
+        if (target == 0)
+        {
+            this->fps_target = 0;
+            return;
+        } 
+
+        this->fps_target = pdMS_TO_TICKS(1000 / target);
     }
 }

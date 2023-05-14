@@ -18,6 +18,7 @@
 #include "ili9341_display.hpp"
 #include "internal_bus.hpp"
 #include "internal_eeprom.hpp"
+#include "renderer.hpp"
 
 namespace airboy {
 
@@ -35,16 +36,23 @@ public:
 
     virtual void setup() = 0;
     virtual void update(float delta) = 0;
-    bool construct();
+    bool construct(int fps_target = 0);
     void run();
 
+    void set_fps_target(int target);
+
 protected:
+    InternalEEprom *eeprom = nullptr;
     Input *input = nullptr;
     Display *display = nullptr;
-    InternalEEprom *eeprom = nullptr;
+    Renderer *renderer = nullptr;
+    
 
 private:
     InternalBus *internal_bus = nullptr;
+
+    TickType_t fps_target;
+    TickType_t fps_target_last_time;
     
 
 };

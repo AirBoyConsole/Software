@@ -12,7 +12,7 @@
         "interface/ftdi/esp32_devkitj_v1.cfg",
         "target/esp32s3.cfg"
     ],
-    "idf.portWin": "COM16",
+    "idf.portWin": "COM13",
     "idf.pythonBinPathWin": "C:\\Espressif\\python_env\\idf5.0_py3.8_env\\Scripts\\python.exe",
     "idf.toolsPathWin": "C:\\Espressif",
     "files.associations": {
@@ -20,7 +20,11 @@
         "array": "cpp",
         "string": "cpp",
         "string_view": "cpp",
-        "netfwd": "cpp"
+        "netfwd": "cpp",
+        "bitset": "cpp",
+        "initializer_list": "cpp",
+        "regex": "cpp",
+        "utility": "cpp"
     },
     "idf.flashType": "UART",
     "cmake.configureOnOpen": false

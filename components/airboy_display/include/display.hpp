@@ -17,6 +17,8 @@
 #include "esp_check.h"
 #include "esp_attr.h"
 
+#include "vector2.hpp"
+
 namespace airboy {
     
 #define LCD_HOST SPI2_HOST
@@ -52,6 +54,7 @@ class Display {
         void clear_rect(int x, int y, int w, int h, uint16_t color);
         void set_pixel(int x, int y, uint16_t color);
         void set_pixel_fast(int x, int y, uint16_t color);
+        Vector2i get_display_size();
 
 #ifdef ENGINE_SPECIAL_OPTIMALIZATION
         uint16_t *frame_buffer = nullptr;
@@ -73,8 +76,7 @@ class Display {
         uint16_t *frame_buffer = nullptr;
 #endif
 
-        int height;
-        int width;
+        Vector2i display_size;
 };
 
 inline void Display::clear_buffer(uint16_t color)
@@ -84,25 +86,25 @@ inline void Display::clear_buffer(uint16_t color)
 
 inline void Display::clear_buffer()
 {
-    memset(this->frame_buffer, 0, this->height * this->width * 2);
+    memset(this->frame_buffer, 0, display_size.y * display_size.x * 2);
 }
 
 inline void Display::clear_rect(int x, int y, int w, int h, uint16_t color)
 {
     for (int row = y; row < y + h; row++)
 		for (int col = x; col < x + w; col++)
-			this->frame_buffer[this->width * row + col] = color;
+			this->frame_buffer[display_size.x * row + col] = color;
 }
 
 inline void Display::set_pixel(int x, int y, uint16_t color)
 {
-    if ((x < 0) || (x > this->width) || (y < 0) || (y > this->height)) return;
-    this->frame_buffer[this->width * y + x] = color;
+    if ((x < 0) || (x > display_size.x) || (y < 0) || (y > display_size.y)) return;
+    this->frame_buffer[display_size.x * y + x] = color;
 }
 
 inline void Display::set_pixel_fast(int x, int y, uint16_t color)
 {
-    this->frame_buffer[this->width * y + x] = color;
+    this->frame_buffer[display_size.x * y + x] = color;
 }
 
 #ifdef __cplusplus

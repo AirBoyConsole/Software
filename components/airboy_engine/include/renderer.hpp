@@ -27,10 +27,17 @@ extern "C" {
 class Renderer 
 {
 public:
-    Renderer(Display &display, Vector2i camera_size);
+    Renderer(Display *display, Vector2i camera_size);
     ~Renderer();
 
-    Camera * camera = nullptr;
+    void draw_fill_rect(Vector2i pos, Vector2i size, uint16_t color);
+    void draw_fill_rect_camera(Vector2i pos, Vector2i size, uint16_t color);
+
+protected:
+    Camera *camera = nullptr;
+    Display *display = nullptr;
+
+    Vector2i display_size;
     
 
 };

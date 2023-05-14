@@ -6,8 +6,8 @@ namespace airboy
 
     Display::Display(int height, int width)
     {
-        this->height = height;
-        this->width = width;
+        display_size.x = width;
+        display_size.y = height;
 
         display_handle = xTaskGetCurrentTaskHandle();
     }
@@ -26,7 +26,7 @@ namespace airboy
 
     void Display::init_framebuffer()
     {
-        this->frame_buffer = static_cast<uint16_t *>(heap_caps_malloc(this->width * this->height * sizeof(uint16_t), MALLOC_CAP_DMA));
+        this->frame_buffer = static_cast<uint16_t *>(heap_caps_malloc(display_size.x * display_size.y * sizeof(uint16_t), MALLOC_CAP_DMA));
     }
 
     void Display::init_backlight(gpio_num_t bl, uint32_t duty)
@@ -58,5 +58,10 @@ namespace airboy
         ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_CHANNEL));
 
         //TO DO: send current backlight setting to eeprom
+    }
+
+    Vector2i Display::get_display_size()
+    {
+        return display_size;
     }
 }
