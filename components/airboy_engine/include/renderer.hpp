@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <cstring>
+#include <string>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
@@ -32,6 +33,9 @@ public:
 
     void draw_fill_rect(Vector2i pos, Vector2i size, uint16_t color);
     void draw_fill_rect_camera(Vector2i pos, Vector2i size, uint16_t color);
+
+    void draw_text(Vector2i pos, int scale, uint16_t color, const char *str);
+    // void draw_text(Vector2i pos, int scale, uint16_t color, std::string str);
 
 protected:
     Camera *camera = nullptr;

@@ -40,8 +40,8 @@ namespace airboy
     {
         if (smooth)
         {
-            position.x = lerp(position.x, target.x, step);
-            position.x = lerp(position.y, target.y, step);
+            position.x = Math::lerp(position.x, target.x, step);
+            position.x = Math::lerp(position.y, target.y, step);
         }else{
             position = target;
         }
