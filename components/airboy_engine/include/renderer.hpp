@@ -50,7 +50,6 @@ public:
     void draw_text(Vector2i pos, int scale, uint16_t color, const char *str);
     // void draw_text(Vector2i pos, int scale, uint16_t color, std::string str);
 
-protected:
     Camera *camera = nullptr;
 
 protected:

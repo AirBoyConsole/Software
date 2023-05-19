@@ -310,17 +310,19 @@ namespace airboy
 
     void Renderer::draw_text(Vector2i pos, int scale, uint16_t color, const char *str)
     {
+        Vector2i display_size = display.get_display_size();
+
         const int fontw = 6,
             fonth = 8;
 
-        if (pos.y + fonth * scale > this->display_size.y || pos.y < 0 || pos.x < 0 || scale < 1)
+        if (pos.y + fonth * scale > display_size.y || pos.y < 0 || pos.x < 0 || scale < 1)
             return;
 
         int len = strlen(str),
             index = 0;
 
         for (int i = 0; i < len; i++) {
-            if (pos.x + i * fontw * scale > this->display_size.x)
+            if (pos.x + i * fontw * scale > display_size.x)
                 return;
 
             if (str[i] < ' ')
@@ -331,7 +333,7 @@ namespace airboy
             for (int ty = 0; ty < fonth * scale; ty++) {
                 for (int tx = 0; tx < fontw * scale; tx++) {
                     if (defaultFont[index][fontw * (int)(ty/scale) + (int)(tx/scale)] == 1)
-						this->display->set_pixel_fast(pos.x + i * fontw * scale + tx, pos.y + ty, color);
+						this->display.set_pixel_fast(pos.x + i * fontw * scale + tx, pos.y + ty, color);
                 }
 			}
 		}
