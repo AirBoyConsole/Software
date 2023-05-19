@@ -1,4 +1,5 @@
 #include "renderer.hpp"
+#include "text.hpp"
 
 namespace airboy 
 {
@@ -306,4 +307,33 @@ namespace airboy
     {
 
     }
+
+    void Renderer::draw_text(Vector2i pos, int scale, uint16_t color, const char *str)
+    {
+        const int fontw = 6,
+            fonth = 8;
+
+        if (pos.y + fonth * scale > this->display_size.y || pos.y < 0 || pos.x < 0 || scale < 1)
+            return;
+
+        int len = strlen(str),
+            index = 0;
+
+        for (int i = 0; i < len; i++) {
+            if (pos.x + i * fontw * scale > this->display_size.x)
+                return;
+
+            if (str[i] < ' ')
+                return;
+
+            index = str[i] - ' ';
+
+            for (int ty = 0; ty < fonth * scale; ty++) {
+                for (int tx = 0; tx < fontw * scale; tx++) {
+                    if (defaultFont[index][fontw * (int)(ty/scale) + (int)(tx/scale)] == 1)
+						this->display->set_pixel_fast(pos.x + i * fontw * scale + tx, pos.y + ty, color);
+                }
+			}
+		}
+	}
 }

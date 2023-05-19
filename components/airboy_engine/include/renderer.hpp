@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cstring>
 #include <utility>
+#include <string>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -46,7 +47,10 @@ public:
     void draw_vline_camera(Vector2i pos, int lenght, uint16_t color);
     void draw_hline_camera(Vector2i pos, int lenght, uint16_t color);
     void draw_line_camera(Vector2i start, Vector2i end, uint16_t color);
+    void draw_text(Vector2i pos, int scale, uint16_t color, const char *str);
+    // void draw_text(Vector2i pos, int scale, uint16_t color, std::string str);
 
+protected:
     Camera *camera = nullptr;
 
 protected:

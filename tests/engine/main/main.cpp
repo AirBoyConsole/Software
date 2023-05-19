@@ -88,6 +88,10 @@ public:
 		{
 			renderer->camera->move(Vector2f(0, -1));
 		}
+
+		this->renderer->draw_text(airboy::Vector2i(22, 0), 2, 0xFFFF, "balon");
+		this->renderer->draw_text(airboy::Vector2i(22, 36), 1, 0xFFFF, "siedem");
+		//this->renderer->draw_fill_rect(airboy::Vector2i(10,10), airboy::Vector2i(55,55), 0xFFFF);
 	}
 };
 
@@ -96,5 +100,6 @@ extern "C" void app_main(void)
     Example demo;
 	if (demo.construct())
 		demo.run();
-	else ESP_LOGE(APP_TAG, "Construct error");
+	else
+		ESP_LOGE(APP_TAG, "Construct error");
 }
