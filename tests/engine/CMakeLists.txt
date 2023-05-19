@@ -9,4 +9,3 @@ set(EXTRA_COMPONENT_DIRS "../../components")
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(engine)
 
-add_compile_definitions(ENGINE_SPECIAL_OPTIMALIZATION)

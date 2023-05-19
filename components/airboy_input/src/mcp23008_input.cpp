@@ -73,18 +73,6 @@ namespace airboy
 
     void MCP23008Input::init_input()
     {
-        // config interrupt pin
-        gpio_config_t io_conf;
-        memset(&io_conf, 0, sizeof(gpio_config_t));
-        io_conf.intr_type = GPIO_INTR_NEGEDGE;
-        io_conf.mode = GPIO_MODE_INPUT;
-        io_conf.pin_bit_mask = (1ULL << this->interrupt);
-        ESP_ERROR_CHECK(gpio_config(&io_conf));
-        
-        // initialize interrupt
-        gpio_install_isr_service(0);
-        gpio_isr_handler_add(this->interrupt, input_interrupt, NULL);
-
         // initialize expanders registers from predefined array
         uint8_t cmd = 0;
         while(input_vendor_specific_init[cmd].address != 0xff)
@@ -99,5 +87,17 @@ namespace airboy
 
         // create task that handles input
         xTaskCreatePinnedToCore(input_task, "get-input", 2048, this, 10, &input_handle, tskNO_AFFINITY);
+
+        // config interrupt pin
+        gpio_config_t io_conf;
+        memset(&io_conf, 0, sizeof(gpio_config_t));
+        io_conf.intr_type = GPIO_INTR_NEGEDGE;
+        io_conf.mode = GPIO_MODE_INPUT;
+        io_conf.pin_bit_mask = (1ULL << this->interrupt);
+        ESP_ERROR_CHECK(gpio_config(&io_conf));
+        
+        // initialize interrupt
+        gpio_install_isr_service(0);
+        gpio_isr_handler_add(this->interrupt, input_interrupt, NULL);
     }
 }

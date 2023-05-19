@@ -106,6 +106,7 @@ class ILI9341Display : public Display
     private:
         void init_bus(display_bus_cfg_t *config);
         void init_lcd(gpio_num_t reset);
+        void set_draw_area();
 };
 
 #ifdef __cplusplus

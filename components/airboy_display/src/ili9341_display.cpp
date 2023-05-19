@@ -20,7 +20,6 @@ namespace airboy
 
         ILI9341Display::init_bus(config);
         ILI9341Display::init_framebuffer();
-        //ILI9341Display::clear_buffer();
         ILI9341Display::init_lcd(reset_pin);
         ILI9341Display::init_backlight(backlight, config->backlight);
     }
@@ -53,7 +52,7 @@ namespace airboy
         io_config.lcd_cmd_bits      = 8;
         io_config.lcd_param_bits    = 8;
         io_config.spi_mode          = 3; // fastest mode
-        io_config.trans_queue_depth = 10;
+        io_config.trans_queue_depth = 5;
         io_config.flags.octal_mode  = 1;
         io_config.on_color_trans_done = this->lcd_trans_done_cb;
 
@@ -76,21 +75,30 @@ namespace airboy
             cmd++;
         }
 
-        //ILI9341Display::draw_frame();
+        set_draw_area();
+        clear_buffer();
+        draw_frame();
+        vTaskDelay(pdMS_TO_TICKS(20));
 
         esp_lcd_panel_io_tx_param(this->io, LCD_CMD_DISPON, NULL, 0);
     }
 
-    void ILI9341Display::draw_frame()
+    void ILI9341Display::set_draw_area()
     {
+        vTaskDelay(pdMS_TO_TICKS(10));
         // send col address to display
-        static const uint8_t col_address[] = {0, 0, 0x01, 0x40};
+        static const uint8_t col_address[] = {0, 0, 0x01, 0x3F};
         ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(this->io, 0x2A, &col_address, 4));
 
+        vTaskDelay(pdMS_TO_TICKS(10));
         // send row address to display
-        static const uint8_t row_address[] = {0, 0, 0x0F, 0x00};
+        static const uint8_t row_address[] = {0, 0, 0x00, 0xEF};
         ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(this->io, 0x2B, &row_address, 4));
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
 
+    void ILI9341Display::draw_frame()
+    {
         // transfer frame buffer
         ESP_ERROR_CHECK(esp_lcd_panel_io_tx_color(this->io, 0x2C, this->frame_buffer, 320 * 240 * 2));
 

@@ -4,6 +4,7 @@
 
 #include "vector2.hpp"
 #include "math.hpp"
+#include "renderer.hpp"
 
 namespace airboy {
 
@@ -21,12 +22,15 @@ public:
     ~Camera();
 
     void update();
-    void move(Vector2i value);
+    void move(Vector2f value);
+    Vector2i get_size();
+
+    friend class Renderer;
 
 private:
-    Vector2i position;
+    Vector2f position;
     Vector2i size;
-    Vector2i target;
+    Vector2f target;
     Vector2i offset;
 
     float step;

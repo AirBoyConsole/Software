@@ -11,6 +11,9 @@ class Vector2 {
         Vector2();
         Vector2(const T x, const T y);
 
+        template <class U>
+        Vector2(Vector2<U> arg) { x = arg.x, y = arg.y; };
+
         Vector2 abs() const;
         float lenght() const;
         void normalize();

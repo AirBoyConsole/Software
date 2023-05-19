@@ -32,7 +32,7 @@ namespace airboy
         }
         if (display == nullptr) return false;
 
-        renderer = new Renderer(display, Vector2i(320, 240));
+        renderer = new Renderer(*display, Vector2i(320, 240));
 
         switch (eeprom->get_input_type())
         {
@@ -62,6 +62,8 @@ namespace airboy
             oldtime = time;
             time = esp_timer_get_time();
             delta = (time - oldtime) / 1000000.0;
+
+            renderer->camera->update();
 
             input->block_input();
 
