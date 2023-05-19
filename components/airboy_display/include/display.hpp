@@ -71,12 +71,11 @@ class Display {
         
         static TaskHandle_t display_handle;
         esp_lcd_panel_io_handle_t io;
+        Vector2i display_size;
 
 #ifndef ENGINE_SPECIAL_OPTIMALIZATION
         uint16_t *frame_buffer = nullptr;
 #endif
-
-        Vector2i display_size;
 };
 
 inline void Display::clear_buffer(uint16_t color)
