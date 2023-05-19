@@ -36,6 +36,8 @@ public:
 
     void draw_text(Vector2i pos, int scale, uint16_t color, const char *str);
     // void draw_text(Vector2i pos, int scale, uint16_t color, std::string str);
+	
+	void draw_line(Vector2i point1, Vector2i point2, uint16_t color);
 
 protected:
     Camera *camera = nullptr;
