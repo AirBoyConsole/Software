@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstring>
+#include <string>
 #include <cmath>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -391,7 +392,12 @@ public:
         playermovespeed = delta * 6.0;
 		playerrotspeed = delta * 3.0;
         handle_input(this->input);
-        ESP_LOGI(TASKNAME, "delta %f", delta);
+
+		std::string str;
+		str = std::to_string(1 / delta);
+		const char * c = str.c_str();
+
+		this->renderer->draw_text(airboy::Vector2i(110, 220), 2, 0xFFFF, c);
 	}
 };
 

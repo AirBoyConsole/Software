@@ -53,6 +53,7 @@ class Display {
         void clear_buffer();
         void clear_rect(int x, int y, int w, int h, uint16_t color);
         void set_pixel(int x, int y, uint16_t color);
+        uint16_t get_pixel(int x, int y);
         void set_pixel_fast(int x, int y, uint16_t color);
         Vector2i get_display_size();
 
@@ -104,6 +105,11 @@ inline void Display::set_pixel(int x, int y, uint16_t color)
 inline void Display::set_pixel_fast(int x, int y, uint16_t color)
 {
     this->frame_buffer[display_size.x * y + x] = color;
+}
+
+inline uint16_t Display::get_pixel(int x, int y)
+{
+    return this->frame_buffer[display_size.x * y + x];
 }
 
 #ifdef __cplusplus

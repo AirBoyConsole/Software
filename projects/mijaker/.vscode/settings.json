@@ -17,6 +17,8 @@
     "idf.toolsPathWin": "C:\\Espressif",
     "idf.flashType": "UART",
     "files.associations": {
-        "memory_resource": "cpp"
+        "memory_resource": "cpp",
+        "sstream": "cpp",
+        "regex": "cpp"
     }
 }

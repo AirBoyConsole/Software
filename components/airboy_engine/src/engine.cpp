@@ -59,6 +59,8 @@ namespace airboy
         fps_target_last_time = xTaskGetTickCount();
         while(true)
         {
+            if (input->is_just_pressed(airboy::Buttons::BUTTON_AIRBOY)) menu();
+
             oldtime = time;
             time = esp_timer_get_time();
             delta = (time - oldtime) / 1000000.0;
@@ -89,5 +91,31 @@ namespace airboy
         } 
 
         this->fps_target = pdMS_TO_TICKS(1000 / target);
+    }
+
+    void Engine::menu()
+    {
+        //darken frame buffer
+        for (int row = 0; row < 320; row++)
+            for (int col = 0; col < 240; col++)
+                this->display->set_pixel_fast(row, col, (display->get_pixel(row, col) >> 1) & 0xEF7B);
+
+        renderer->draw_fill_rect(Vector2i(60, 0), Vector2i(200, 180), 0xEB5A);
+        renderer->draw_fill_rect(Vector2i(60, 0), Vector2i(200, 40), 0x8631);
+
+        input->reset_previous();
+
+        while(true)
+        {
+            ESP_LOGI(ENGINE_TAG, "value %d", input->is_just_pressed(airboy::Buttons::BUTTON_ACTION_A));
+            if (input->is_just_pressed(airboy::Buttons::BUTTON_AIRBOY))
+            {
+                return;
+            } 
+
+            input->reset_previous();
+
+            display->draw_frame();
+        }
     }
 }
