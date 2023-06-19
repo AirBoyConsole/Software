@@ -1,5 +1,7 @@
 #include <iostream>
 #include <cstring>
+#include <string>
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
@@ -89,7 +91,11 @@ public:
 			renderer->camera->move(Vector2f(0, -1));
 		}
 
-		this->renderer->draw_text(airboy::Vector2i(22, 0), 2, 0xFFFF, "balon");
+		std::string str;
+		str = std::to_string(1 / delta);
+		const char * c = str.c_str();
+
+		this->renderer->draw_text(airboy::Vector2i(22, 0), 2, 0xFFFF, c);
 		this->renderer->draw_text(airboy::Vector2i(22, 36), 1, 0xFFFF, "siedem");
 		//this->renderer->draw_fill_rect(airboy::Vector2i(10,10), airboy::Vector2i(55,55), 0xFFFF);
 	}

@@ -49,11 +49,12 @@ protected:
     
 
 private:
+    void menu();
+
     InternalBus *internal_bus = nullptr;
 
     TickType_t fps_target;
     TickType_t fps_target_last_time;
-    
 
 };
 
@@ -62,3 +63,14 @@ private:
 #endif
 }
 
+/*void Renderer::darken_buffer(int darken_value)
+    {
+        for (int row = 0; row < 320; row++)
+            for (int col = 0; col < 240; col++)
+                #ifndef ENGINE_SPECIAL_OPTIMALIZATION
+                    this->display.set_pixel_fast(row, col, (display.get_pixel(row, col)));
+                #else
+                    this->display.frame_buffer[display_size.x * pixel + pos.y] = color;
+                #endif
+                this->frame_buffer[i] = color;
+    }*/

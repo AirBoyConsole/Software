@@ -115,7 +115,7 @@ namespace airboy
     {
         Vector2i display_size = display.get_display_size();
 
-        if ((pos.x < 0) || (pos.y < 0) || (size.x >= display_size.x) || (size.y >= display_size.y)) return;
+        if ((pos.x < 0) || (pos.y < 0) || (pos.x + size.x >= display_size.x) || (pos.y + size.y >= display_size.y)) return;
 
         for (int row = pos.y; row < pos.y + size.y; row++)
             for (int col = pos.x; col < pos.x + size.x; col++)
@@ -123,7 +123,7 @@ namespace airboy
                 #ifndef ENGINE_SPECIAL_OPTIMALIZATION
                     this->display.set_pixel_fast(col, row, color);
                 #else
-                    this->display.frame_buffer[display_size.x * col + row] = color;
+                    this->display.frame_buffer[display_size.x * row + col] = color;
                 #endif
     }
 
@@ -141,7 +141,7 @@ namespace airboy
                 #ifndef ENGINE_SPECIAL_OPTIMALIZATION
                     this->display.set_pixel_fast(col, row, color);
                 #else
-                    this->display.frame_buffer[display_size.x * col + row] = color;
+                    this->display.frame_buffer[display_size.x * row + col] = color;
                 #endif
     }
 
@@ -321,19 +321,19 @@ namespace airboy
         int len = strlen(str),
             index = 0;
 
-        for (int i = 0; i < len; i++) {
-            if (pos.x + i * fontw * scale > display_size.x)
-                return;
-
-            if (str[i] < ' ')
-                return;
+        for (int i = 0; i < len; i++) 
+        { 
+            if (pos.x + i * fontw * scale > display_size.x) return;
+            if (str[i] < ' ') return;
 
             index = str[i] - ' ';
 
-            for (int ty = 0; ty < fonth * scale; ty++) {
-                for (int tx = 0; tx < fontw * scale; tx++) {
+            for (int ty = 0; ty < fonth * scale; ty++) 
+            {
+                for (int tx = 0; tx < fontw * scale; tx++) 
+                {
                     if (defaultFont[index][fontw * (int)(ty/scale) + (int)(tx/scale)] == 1)
-						this->display.set_pixel_fast(pos.x + i * fontw * scale + tx, pos.y + ty, color);
+						display.set_pixel_fast(pos.x + i * fontw * scale + tx, pos.y + ty, color);
                 }
 			}
 		}
