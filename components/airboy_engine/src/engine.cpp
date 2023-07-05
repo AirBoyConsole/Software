@@ -28,7 +28,7 @@ namespace airboy
                 break;
             default:
                 ESP_LOGE(ENGINE_TAG, "Unknow display");
-                ESP_LOGE(ENGINE_TAG, "Pleas update game opn cartridge to the latest library version");
+                ESP_LOGE(ENGINE_TAG, "Pleas update game on cartridge to the latest library version");
         }
         if (display == nullptr) return false;
 
