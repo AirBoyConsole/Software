@@ -43,13 +43,16 @@ namespace airboy
     bool AudioChannelWav::read_header()
     {
         this->file.read((char *) &this->header, 44);
-        //ESP_LOGI(CHANNEL_TAG, "header check");
+        
 
         // must be 16 bit stereo file
         if (!(this->header.num_channels == 2 || this->header.num_channels == 1)) return false;
         if (this->header.bits_per_sample != 16) return false;
 
-        if (this->header.num_channels == 1) this->stereo = false;
+        if (this->header.num_channels == 1) 
+        {
+            this->stereo = false;
+        }
         else this->stereo = true;
 
         audio->set_sample_rate(this->header.sample_rate);

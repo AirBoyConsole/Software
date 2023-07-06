@@ -10,7 +10,7 @@
 #include "esp_check.h"
 
 #define CHANNEL_TAG "channel"
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 4096
 #define BYTES_TO_SEND 4
 
 namespace airboy {

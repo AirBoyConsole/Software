@@ -40,6 +40,8 @@ namespace airboy
         vTaskDelete(this->audio_task_handle);
 
         for (auto iter = channels.begin(); iter != channels.end(); ++iter) delete *iter;
+
+        Audio::instance = false;
     }
 
     void Audio::play(const char *file_name, unsigned int channel_number, bool interrupt, bool repeat)
@@ -96,7 +98,11 @@ namespace airboy
         channels[channel_number]->is_playing = false;
         active_channel_count--;
 
-        if (active_channel_count == 0)  vTaskSuspend(this->audio_task_handle);
+        if (active_channel_count == 0) 
+        {
+            i2s_channel_disable(this->audio_chanel_handle);
+            vTaskSuspend(this->audio_task_handle);
+        } 
     }
 
     void Audio::pause_audio()
@@ -177,11 +183,12 @@ namespace airboy
 
                     int32_t a = sample_left;
                     sample_left = a + (*mono_sample) - ((a * (*mono_sample)) >> 0x10);
+                    sample_right = sample_left;
 
                     mixed_sample.left = static_cast<int16_t>(sample_left);
                     mixed_sample.right = static_cast<int16_t>(sample_left);
 
-                    audio->channels[i]->buffer_bytes_left -= 4;
+                    audio->channels[i]->buffer_bytes_left -= 2;
                 }
             }
 
