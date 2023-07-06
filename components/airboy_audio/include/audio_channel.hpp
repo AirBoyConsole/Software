@@ -10,7 +10,7 @@
 #include "esp_check.h"
 
 #define CHANNEL_TAG "channel"
-#define BUFFER_SIZE 256
+#define BUFFER_SIZE 1024
 #define BYTES_TO_SEND 4
 
 namespace airboy {
@@ -31,6 +31,9 @@ class AudioChannel {
         unsigned int channel_id;
 
         std::fstream file;
+        bool stereo;
+
+        float volume = 1.0;
         
         bool is_playing = false;
         bool paused = false;

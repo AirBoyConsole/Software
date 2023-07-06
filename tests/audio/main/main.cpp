@@ -71,7 +71,7 @@ extern "C" void app_main(void)
 
     ESP_LOGI(TAG, "heap przded: %d", heap_caps_get_free_size(MALLOC_CAP_DEFAULT));*/
 
-    airboy::Audio *audio = airboy::LM4936Audio::create_instance(internal_bus->get_port(), config); 
+    airboy::Audio *audio = airboy::LM4936Audio::create_instance(internal_bus->get_port(), config);
 
     /*ESP_LOGI(TAG, "heap po tworzeniu: %d", heap_caps_get_free_size(MALLOC_CAP_DEFAULT));
 
@@ -88,15 +88,20 @@ extern "C" void app_main(void)
     airboy::Input* input = new airboy::MCP23008Input(internal_bus->get_port(), &input_conf);
 
     audio->add_channel_wav();
+    audio->add_channel_wav();
 
-    audio->play("/sdcard/cleaper.wav", 0, false, true);
+    audio->play("/sdcard/e.wav", 0, false, true);
+    //audio->play("/sdcard/exp.wav", 1, false, true);
 
     while (true)
     {
         if (input->is_pressed(airboy::Buttons::BUTTON_DPAD_UP)) audio->pause_resume(0);
         if (input->is_pressed(airboy::Buttons::BUTTON_DPAD_DOWN)) audio->play("/sdcard/e.wav",0,true,false);
         if (input->is_pressed(airboy::Buttons::BUTTON_DPAD_LEFT)) audio->play("/sdcard/wayy.wav",0,true,true);
-        if (input->is_pressed(airboy::Buttons::BUTTON_DPAD_RIGHT)) audio->play("/sdcard/exp.wav",0,true,true);
+        if (input->is_pressed(airboy::Buttons::BUTTON_DPAD_RIGHT)) audio->play("/sdcard/exp.wav",1,true,false);
+
+        if (input->is_pressed(airboy::Buttons::BUTTON_ACTION_X)) audio->set_volume(0, 0.1);
+        if (input->is_pressed(airboy::Buttons::BUTTON_ACTION_Y)) audio->set_volume(0, 1.0);
 
         if (input->is_pressed(airboy::Buttons::BUTTON_ACTION_A)) 
         {

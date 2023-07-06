@@ -34,7 +34,7 @@ typedef struct {
 class SDMMC 
 {
     public:
-        SDMMC(sdmmc_pinout_t *pinout, const char* mount_point = "/sdcard", uint8_t max_open_files = 32, bool mode_one_bit = true, int sdmmc_frequency = SDMMC_FREQ_HIGHSPEED, bool format_if_mount_failed = false);
+        SDMMC(sdmmc_pinout_t *pinout, const char* mount_point = "/sdcard", uint8_t max_open_files = 32, bool mode_one_bit = true, int sdmmc_frequency = SDMMC_FREQ_52M, bool format_if_mount_failed = false);
         ~SDMMC();
 
         uint64_t card_size();
