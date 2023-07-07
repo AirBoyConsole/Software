@@ -42,6 +42,8 @@
         "xfacet": "cpp",
         "xlocinfo": "cpp",
         "xmemory": "cpp",
-        "xstddef": "cpp"
+        "xstddef": "cpp",
+        "fstream": "cpp",
+        "string": "cpp"
     }
 }
