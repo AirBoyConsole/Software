@@ -54,7 +54,7 @@ class Audio {
 
     protected:
         static void IRAM_ATTR audio_task(void* arg);
-        virtual void init_audio(audio_bus_cfg_t &conf) = 0;
+        virtual void init_audio() = 0;
 
         enum class State {
             RUN,

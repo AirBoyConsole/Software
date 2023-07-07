@@ -55,20 +55,14 @@ extern "C" void app_main(void)
 
     audio->play("/sdcard/way.wav", 0, false, true);
     audio->play("/sdcard/exp.wav", 1, true, true);
-    audio->play("/sdcard/wayy.wav", 2, true, true);
-    audio->play("/sdcard/wayy.wav", 3, true, true);
+    //audio->play("/sdcard/wayy.wav", 2, true, true);
+    //audio->play("/sdcard/wayy.wav", 3, true, true);
 
     unsigned int chanlle = 0;
-    char temp[] = {
-        128, 190, 50, 250, 10, 80, 255
-    };
 
     while (true)
     {
-        ESP_LOGI(TAG, "%u",chanlle);
         if (input->is_pressed(airboy::Buttons::BUTTON_DPAD_UP)) audio->pause_resume(0);
-        if (input->is_pressed(airboy::Buttons::BUTTON_DPAD_DOWN)) chanlle--;
-        if (input->is_pressed(airboy::Buttons::BUTTON_DPAD_LEFT)) audio->stop(chanlle);
         if (input->is_pressed(airboy::Buttons::BUTTON_DPAD_RIGHT)) audio->play("/sdcard/exp.wav",3,true,false);
 
         if (input->is_pressed(airboy::Buttons::BUTTON_ACTION_X)) audio->set_volume(0, 0.1);
@@ -81,8 +75,6 @@ extern "C" void app_main(void)
 
             ESP_LOGI(TAG, "%s",stats);
         }
-
-
 
         vTaskDelay(100);
     }

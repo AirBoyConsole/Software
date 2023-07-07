@@ -23,11 +23,17 @@ class LM4936Audio : public Audio
 {
     public:
         ~LM4936Audio();
+
+        /**
+         * @brief create instance of an Audio object
+         * 
+         * @return pointer to object or nullptr if object can't be created
+         */ 
         static Audio* create_instance(i2c_port_t port, audio_bus_cfg_t &conf);
 
     private:
         LM4936Audio(i2c_port_t port, audio_bus_cfg_t &conf);
-        void init_audio(audio_bus_cfg_t &conf);
+        void init_audio();
         esp_err_t register_write(uint8_t data);
 
         i2c_port_t port;

@@ -9,13 +9,14 @@ namespace airboy
         this->chip_address = conf.address;
         this->port = port;
 
-        init_audio(conf);
+        init_audio();
     }
 
     LM4936Audio::~LM4936Audio() {}
 
     Audio* LM4936Audio::create_instance(i2c_port_t port, audio_bus_cfg_t &conf)
     {
+        //there must be only one instance
         if (LM4936Audio::instance)
         {
             ESP_LOGE(AUDIO_TAG, "cannot create more than one instance of audio");
@@ -27,7 +28,7 @@ namespace airboy
         return audio;
     }
 
-    void LM4936Audio::init_audio(audio_bus_cfg_t &conf)
+    void LM4936Audio::init_audio()
     {
         ESP_ERROR_CHECK(register_write(0x05));
         ESP_ERROR_CHECK(register_write(0x9F));

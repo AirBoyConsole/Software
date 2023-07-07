@@ -7,21 +7,23 @@ namespace airboy
 
     void AudioChannelWav::read_decode_file()
     {
+        // check if any bytes left in file
         if (this->file_bytes_left == 0)
         {
+            //if the repeat flag is set, play the file again, otherwise stop the channel
             if (repeat)
             {
+                
                 this->file_bytes_left = this->header.data_size;
                 this->file.seekg(44);
-                //ESP_LOGI(CHANNEL_TAG, "audio loop");
             }
             else
             {
                 this->audio->stop(this->channel_id);
-                //ESP_LOGI(CHANNEL_TAG, "audio stop");
             }
         }
 
+        //if there are less bytes left in the file than the buffer size read all bytes left, if not read whole buffer
         if (this->file_bytes_left < BUFFER_SIZE)
         {
             this->file.read(channel_buffer, this->file_bytes_left);
@@ -38,24 +40,23 @@ namespace airboy
 
     bool AudioChannelWav::read_header()
     {
+        //wav header is 44 bytes long
         this->file.read((char *) &this->header, 44);
-        
 
-        // must be 16 bit stereo file
+        // must be 16 bit stereo or mono file
         if (!(this->header.num_channels == 2 || this->header.num_channels == 1)) return false;
         if (this->header.bits_per_sample != 16) return false;
 
-        if (this->header.num_channels == 1) 
-        {
-            this->stereo = false;
-        }
+        // set the channel mode to mono or stereo
+        if (this->header.num_channels == 1) this->stereo = false;
         else this->stereo = true;
 
+        // set audio sample rate to file sample rate
         audio->set_sample_rate(this->header.sample_rate);
+        //audio system sample rate must be the same as file sample rate
         if (audio->get_sample_rate() != this->header.sample_rate) return false;
 
         this->file_bytes_left = this->header.data_size;
-        //ESP_LOGI(CHANNEL_TAG, "file size %d", this->file_bytes_left);
 
         return true;
     }
