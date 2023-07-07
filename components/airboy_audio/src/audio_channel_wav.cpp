@@ -7,9 +7,6 @@ namespace airboy
 
     void AudioChannelWav::read_decode_file()
     {
-        if (!this->is_playing) return;
-
-        //ESP_LOGI(CHANNEL_TAG, "bytes left: %u", this->file_bytes_left);
         if (this->file_bytes_left == 0)
         {
             if (repeat)
@@ -20,7 +17,6 @@ namespace airboy
             }
             else
             {
-                this->is_playing = false;
                 this->audio->stop(this->channel_id);
                 //ESP_LOGI(CHANNEL_TAG, "audio stop");
             }
@@ -57,10 +53,6 @@ namespace airboy
 
         audio->set_sample_rate(this->header.sample_rate);
         if (audio->get_sample_rate() != this->header.sample_rate) return false;
-
-        ESP_LOGI(CHANNEL_TAG, "sample rate %d", audio->get_sample_rate());
-        ESP_LOGI(CHANNEL_TAG, "file sample rate %lu", this->header.sample_rate);
-
 
         this->file_bytes_left = this->header.data_size;
         //ESP_LOGI(CHANNEL_TAG, "file size %d", this->file_bytes_left);

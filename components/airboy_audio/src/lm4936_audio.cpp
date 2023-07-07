@@ -30,7 +30,7 @@ namespace airboy
     void LM4936Audio::init_audio(audio_bus_cfg_t &conf)
     {
         ESP_ERROR_CHECK(register_write(0x05));
-        ESP_ERROR_CHECK(register_write(0x93));
+        ESP_ERROR_CHECK(register_write(0x9F));
     }
 
     esp_err_t LM4936Audio::register_write(uint8_t data)

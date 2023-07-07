@@ -46,12 +46,14 @@ namespace airboy
 
     void Audio::play(const char *file_name, unsigned int channel_number, bool interrupt, bool repeat)
     {
-        this->channels[channel_number]->is_playing = false;
+        //this->channels[channel_number]->is_playing = false;
 
-        // check if chanell id exists
+        // check if channel id exists
         if (this->channels.size() < channel_number) return;
+
         // if channel is playing and interrupt is not selected return 
-        if ((this->channels[channel_number]->is_playing == true) && (interrupt == false)) return;
+        if ((!(this->channels[channel_number]->state == AudioChannel::State::STOP)) && (interrupt == false)) return;
+
         // if interrupt is selected and another file was playing close that file
         if (this->channels[channel_number]->file.is_open()) this->channels[channel_number]->file.close();
 
@@ -69,45 +71,42 @@ namespace airboy
         // initialy fill audio buffer
         this->channels[channel_number]->read_decode_file();
 
-        if (active_channel_count == 0)  vTaskResume(this->audio_task_handle);
+        if (state == State::STOP)
+        {
+            i2s_channel_enable(this->audio_chanel_handle);
+            vTaskResume(this->audio_task_handle);
+            state = State::RUN;
+        }
         active_channel_count++;
 
-        this->channels[channel_number]->paused = false;
+        this->channels[channel_number]->state = AudioChannel::State::PLAY;
         this->channels[channel_number]->repeat = repeat;
-        this->channels[channel_number]->is_playing = true;
     }
 
     void Audio::pause_resume(unsigned int channel_number)
     {
-        if (!this->channels[channel_number]->paused && this->channels[channel_number]->is_playing)
-        {
-            this->channels[channel_number]->paused = true;
-            this->channels[channel_number]->is_playing = false;
-        }
-        else
-        {
-            this->channels[channel_number]->paused = false;
-            this->channels[channel_number]->is_playing = true;
-        }
+        if (this->channels[channel_number]->state == AudioChannel::State::PLAY)
+            this->channels[channel_number]->state = AudioChannel::State::PAUSE;
+
+        else if (this->channels[channel_number]->state == AudioChannel::State::PAUSE)
+            this->channels[channel_number]->state = AudioChannel::State::PLAY;
     }
 
     void Audio::stop(unsigned int channel_number)
     {
         if (this->channels.size() < channel_number) return;
 
-        channels[channel_number]->is_playing = false;
+        channels[channel_number]->state = AudioChannel::State::STOP;
+
         active_channel_count--;
 
         if (active_channel_count == 0) 
         {
             i2s_channel_disable(this->audio_chanel_handle);
             vTaskSuspend(this->audio_task_handle);
-        } 
-    }
 
-    void Audio::pause_audio()
-    {
-        
+            state = State::STOP;
+        } 
     }
 
     void Audio::set_volume(unsigned int channel_number, float volume)
@@ -124,7 +123,7 @@ namespace airboy
 
     void Audio::set_sample_rate(unsigned int new_sample_rate)
     {
-        if (active_channel_count != 0) return;
+        if (state != State::STOP) return;
         if (new_sample_rate < 8000) return;
 
         i2s_std_clk_config_t conf = I2S_STD_CLK_DEFAULT_CONFIG(new_sample_rate);
@@ -140,58 +139,75 @@ namespace airboy
 
     void IRAM_ATTR Audio::audio_task(void *arg)
     {
+        // get audio object instance
         Audio *audio = reinterpret_cast<Audio*>(arg);
-        size_t bytes_written;
-        int32_t sample_left, sample_right;
-        sample16_t* stereo_sample;
-        int16_t* mono_sample;
+
+        int sample_left, sample_right;
+        sample16_t* stereo_sample = nullptr;
+        int16_t* mono_sample  = nullptr;
         sample16_t mixed_sample;
 
-        vTaskSuspend(NULL);
+        size_t bytes_written;
 
-        i2s_channel_enable(audio->audio_chanel_handle);
+        vTaskSuspend(NULL);
 
         while (true)
         {
             sample_left = sample_right = 0;
             for (unsigned int i = 0; i < audio->channels.size(); i++)
             {
+                if (audio->channels[i]->state != AudioChannel::State::PLAY) continue;
                 if (audio->channels[i]->buffer_bytes_left == 0) audio->channels[i]->read_decode_file();
-                if (!audio->channels[i]->is_playing) continue; 
+                if (audio->channels[i]->state != AudioChannel::State::PLAY) continue;
+                
 
                 if (audio->channels[i]->stereo)
                 {
                     stereo_sample = reinterpret_cast<sample16_t*>(audio->channels[i]->channel_buffer + BUFFER_SIZE - audio->channels[i]->buffer_bytes_left);
+                    int stereo_sample_int_l = static_cast<int>(stereo_sample->left);
+                    int stereo_sample_int_r = static_cast<int>(stereo_sample->right);
 
-                    stereo_sample->left *= audio->channels[i]->volume;
-                    stereo_sample->right *= audio->channels[i]->volume;
+                    stereo_sample_int_l *= audio->channels[i]->volume;
+                    stereo_sample_int_r *= audio->channels[i]->volume;
 
-                    int32_t a = sample_left, b = sample_right;
-                    sample_left = a + stereo_sample->left - ((a * stereo_sample->left) >> 0x10);
-                    sample_right = b + stereo_sample->right - ((b * stereo_sample->right) >> 0x10);
+                    sample_left += stereo_sample_int_l;
+                    sample_right += stereo_sample_int_r;
 
-                    mixed_sample.left = static_cast<int16_t>(sample_left);
-                    mixed_sample.right = static_cast<int16_t>(sample_right);
+                    /*int w_l = ((sample_left * stereo_sample_int_l) >> 0x10);
+                    int w_r = ((sample_right * stereo_sample_int_r) >> 0x10);
+
+                    sample_left += stereo_sample_int_l - w_l;
+                    sample_right += stereo_sample_int_r - w_r;*/
 
                     audio->channels[i]->buffer_bytes_left -= 4;
                 }
                 else
                 {
                     mono_sample = reinterpret_cast<int16_t*>(audio->channels[i]->channel_buffer + BUFFER_SIZE - audio->channels[i]->buffer_bytes_left);
+                    int mono_sample_int = static_cast<int>(*mono_sample);
 
-                    *mono_sample *= audio->channels[i]->volume;
+                    mono_sample_int *= audio->channels[i]->volume;
 
-                    int32_t a = sample_left;
-                    sample_left = a + (*mono_sample) - ((a * (*mono_sample)) >> 0x10);
-                    sample_right = sample_left;
+                    sample_left += mono_sample_int;
+                    sample_right += mono_sample_int;
 
-                    mixed_sample.left = static_cast<int16_t>(sample_left);
-                    mixed_sample.right = static_cast<int16_t>(sample_left);
+                    /*int w_l = ((sample_left * mono_sample_int) >> 0x10);
+
+                    sample_left += mono_sample_int - w_l;
+                    sample_right += mono_sample_int - w_l;*/
 
                     audio->channels[i]->buffer_bytes_left -= 2;
                 }
             }
 
+            if (sample_left > 32767) sample_left = 32767;
+            if (sample_left < -32768) sample_left =- 32768;
+
+            if (sample_right > 32767) sample_right = 32767;
+            if (sample_right < -32768) sample_right =- 32768;
+
+            mixed_sample.left = static_cast<int16_t>(sample_left);
+            mixed_sample.right = static_cast<int16_t>(sample_right);
             i2s_channel_write(audio->audio_chanel_handle, &mixed_sample, 4, &bytes_written, portMAX_DELAY);
         }
 

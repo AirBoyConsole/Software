@@ -27,20 +27,27 @@ class AudioChannel {
         virtual void read_decode_file() = 0;    
         virtual bool read_header() = 0; 
 
-        Audio* audio;
-        unsigned int channel_id;
+        enum class State {
+            PLAY,
+            PAUSE,
+            STOP
+        };
+
+        State state = State::STOP;
 
         std::fstream file;
         bool stereo;
 
         float volume = 1.0;
         
-        bool is_playing = false;
-        bool paused = false;
         bool repeat = false;
         
         unsigned int buffer_bytes_left = 0;
         char channel_buffer[BUFFER_SIZE];
+        
+    protected:
+        Audio* audio;
+        unsigned int channel_id;
 };
 
 #ifdef __cplusplus

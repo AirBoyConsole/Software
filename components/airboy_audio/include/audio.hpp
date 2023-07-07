@@ -45,7 +45,6 @@ class Audio {
         void play(const char* file_name, unsigned int channel_number, bool interrupt = false, bool repeat = false);
         void pause_resume(unsigned int channel_number);
         void stop(unsigned int channel_number);
-        void pause_audio();
         void set_volume(unsigned int channel_number, float volume);
 
         void add_channel_wav();
@@ -56,6 +55,12 @@ class Audio {
     protected:
         static void IRAM_ATTR audio_task(void* arg);
         virtual void init_audio(audio_bus_cfg_t &conf) = 0;
+
+        enum class State {
+            RUN,
+            STOP
+        };
+        State state = State::STOP;
 
         std::vector<AudioChannel*> channels;
         unsigned int active_channel_count = 0;
