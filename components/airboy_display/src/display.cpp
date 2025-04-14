@@ -1,67 +1,69 @@
 #include "display.hpp"
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+#include "freertos/idf_additions.h"
+
 namespace airboy 
 {
-    TaskHandle_t Display::display_handle;
-
-    Display::Display(int height, int width)
+    Display::Display()
     {
-        display_size.x = width;
-        display_size.y = height;
-
-        display_handle = xTaskGetCurrentTaskHandle();
+        buffer_queue = xQueueCreate(10, sizeof(FrameBuffer *));
+        if (buffer_queue == nullptr)
+            status = 1;
     }
 
     Display::~Display()
     {
-        if (frame_buffer != nullptr) delete [] frame_buffer;
+        vQueueDelete(buffer_queue);
     }
 
-    bool Display::lcd_trans_done_cb(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx)
+    int Display::get_status() const
     {
-        BaseType_t woken = true;
-        vTaskResume(display_handle);
-        return woken;
+        return status;
     }
 
-    void Display::init_framebuffer()
+    void Display::add_buffer_queue(FrameBuffer* buffer)
     {
-        this->frame_buffer = static_cast<uint16_t *>(heap_caps_malloc(display_size.x * display_size.y * sizeof(uint16_t), MALLOC_CAP_DMA));
+        if (xSemaphoreTake(buffer->mutex, portMAX_DELAY) == pdTRUE)
+            if (xQueueSend(buffer_queue, &buffer, pdMS_TO_TICKS(10)) != pdTRUE)
+                xSemaphoreGive(buffer->mutex);
     }
 
-    void Display::init_backlight(gpio_num_t bl, uint32_t duty)
+    void IRAM_ATTR Display::display_task(void* arg)
     {
-        ledc_timer_config_t backlight_timer;
-        memset(&backlight_timer, 0, sizeof(ledc_timer_config_t));
-        backlight_timer.speed_mode       = LEDC_MODE,
-        backlight_timer.timer_num        = LEDC_TIMER_0;
-        backlight_timer.duty_resolution  = LEDC_TIMER_8_BIT;
-        backlight_timer.freq_hz          = 5000;
-        backlight_timer.clk_cfg          = LEDC_AUTO_CLK;
-        ESP_ERROR_CHECK(ledc_timer_config(&backlight_timer));
+        Display *display = reinterpret_cast<Display*>(arg);
 
-        ledc_channel_config_t backlight_channel;
-        memset(&backlight_channel, 0, sizeof(ledc_channel_config_t));
-        backlight_channel.speed_mode     = LEDC_MODE;
-        backlight_channel.channel        = LEDC_CHANNEL;
-        backlight_channel.timer_sel      = LEDC_TIMER_0;
-        backlight_channel.intr_type      = LEDC_INTR_DISABLE;
-        backlight_channel.gpio_num       = bl;
-        backlight_channel.duty           = duty;
-        backlight_channel.hpoint         = 0;
-        ESP_ERROR_CHECK(ledc_channel_config(&backlight_channel));
+        if (display != nullptr)
+        {
+            if (display->status == 0)
+            {
+                while(true)
+                {
+                    if(xQueueReceive(display->buffer_queue, &display->current_queue_buffer, portMAX_DELAY))
+                    {
+                        display->send_buffer();
+                    }
+                }
+            }
+        }
+
+        // pointer given is not valid or display was not created correctly or a break occured in task loop
+        // delete this task
+        vTaskDelete(NULL);
     }
 
-    void Display::set_backlight_level(uint8_t value)
+    bool IRAM_ATTR Display::lcd_trans_done_cb(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx)
     {
-        ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, value));
-        ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_CHANNEL));
+        BaseType_t woken = pdFALSE;
 
-        //TO DO: send current backlight setting to eeprom
-    }
 
-    Vector2i Display::get_display_size()
-    {
-        return display_size;
+        FrameBuffer *buffer = static_cast<FrameBuffer*>(user_ctx);
+
+        ESP_DRAM_LOGI("LCD", "Trans done, buffer: %p", buffer);
+        //xSemaphoreGiveFromISR(buffer->mutex, &woken);
+
+        return (woken == pdTRUE);
     }
 }

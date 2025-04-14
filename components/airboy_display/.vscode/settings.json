@@ -1,0 +1,10 @@
+{
+  "C_Cpp.intelliSenseEngine": "default",
+  "files.associations": {
+    "format": "cpp",
+    "memory": "cpp",
+    "random": "cpp",
+    "optional": "cpp",
+    "*.tcc": "cpp"
+  }
+}

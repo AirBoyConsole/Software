@@ -1,22 +1,8 @@
 #pragma once
 
-#include <iostream>
-#include <cstring>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-
-#include "esp_lcd_panel_interface.h"
-#include "esp_lcd_panel_io.h"
-#include "esp_lcd_panel_vendor.h"
-#include "esp_lcd_panel_ops.h"
-#include "esp_lcd_panel_commands.h"
-#include "driver/spi_master.h"
-
-#include "driver/gpio.h"
-#include "esp_log.h"
-#include "esp_check.h"
-
 #include "display.hpp"
+
+#include "esp_lcd_panel_commands.h"
 
 namespace airboy {
 
@@ -24,11 +10,11 @@ namespace airboy {
 extern "C" {
 #endif
 
-typedef struct {
+struct lcd_init_cmd_t{
     uint8_t cmd;
     uint8_t data[16];
     uint8_t data_bytes; // Length of data in above data array; 0xFF = end of cmds.
-} lcd_init_cmd_t;
+};
 
 const lcd_init_cmd_t vendor_specific_init[] = {
     /* SW reset */
@@ -97,17 +83,21 @@ const lcd_init_cmd_t vendor_specific_init[] = {
     {0, {0}, 0xff},
 };
 
-class ILI9341Display : public Display 
+class DisplayILI9341 : public Display
 {
-    public:
-        ILI9341Display(display_bus_cfg_t *config);
-        void draw_frame();
+public:
+    DisplayILI9341();
+    virtual ~DisplayILI9341();
 
-    private:
-        void init_bus(display_bus_cfg_t *config);
-        void init_lcd(gpio_num_t reset);
-        void set_draw_area();
+private:
+    void IRAM_ATTR send_buffer();
+    void init_bus(); // TO DO move to another new interface class
+
+    esp_lcd_panel_io_handle_t io; // TO DO move to another new interface class
 };
+
+
+
 
 #ifdef __cplusplus
 }
