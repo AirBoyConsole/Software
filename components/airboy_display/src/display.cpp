@@ -9,9 +9,11 @@ namespace airboy
 {
     Display::Display()
     {
+        status = STATUS_OK;
+
         buffer_queue = xQueueCreate(10, sizeof(FrameBuffer *));
         if (buffer_queue == nullptr)
-            status = 1;
+            status = STATUS_NO_MEM;
     }
 
     Display::~Display()
@@ -26,6 +28,8 @@ namespace airboy
 
     void Display::add_buffer_queue(FrameBuffer* buffer)
     {
+        ESP_LOGI(DISPLAY_TAG, "adding buffer %p, to queue", buffer);
+
         if (xSemaphoreTake(buffer->mutex, portMAX_DELAY) == pdTRUE)
             if (xQueueSend(buffer_queue, &buffer, pdMS_TO_TICKS(10)) != pdTRUE)
                 xSemaphoreGive(buffer->mutex);
@@ -58,11 +62,8 @@ namespace airboy
     {
         BaseType_t woken = pdFALSE;
 
-
-        FrameBuffer *buffer = static_cast<FrameBuffer*>(user_ctx);
-
-        ESP_DRAM_LOGI("LCD", "Trans done, buffer: %p", buffer);
-        //xSemaphoreGiveFromISR(buffer->mutex, &woken);
+        FrameBuffer **buffer = static_cast<FrameBuffer**>(user_ctx);
+        xSemaphoreGiveFromISR((*buffer)->mutex, &woken);
 
         return (woken == pdTRUE);
     }
