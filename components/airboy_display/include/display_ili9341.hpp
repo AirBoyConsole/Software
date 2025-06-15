@@ -4,7 +4,7 @@
 
 #include "esp_lcd_panel_commands.h"
 
-namespace airboy {
+namespace arb {
 
 #ifdef __cplusplus
 extern "C" {

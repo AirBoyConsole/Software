@@ -1,22 +1,20 @@
 #include "framebuffer.hpp"
 
-namespace airboy 
+namespace arb 
 {
-    FrameBuffer::FrameBuffer(uint16_t width, uint16_t height, uint16_t offset_x, uint16_t offset_y)
+    FrameBuffer::FrameBuffer(Vector2i size, Vector2i offset)
     {
         // fields initialization
         // -----------------------
         status = STATUS_OK;
-        this->width = width;
-        this->height = height;
-        this->offset_x = offset_x;
-        this->offset_y = offset_y;
-        size = width * height;
+        this->size = size;
+        this->offset = offset;
+        lenght = size.x * size.y;
         // -----------------------
 
         // buffer initialization
         // -----------------------
-        buffer = static_cast<uint16_t *>(heap_caps_malloc(size * 2, MALLOC_CAP_DMA));
+        buffer = static_cast<uint16_t *>(heap_caps_malloc(lenght * 2, MALLOC_CAP_DMA));
         if (buffer == nullptr)
             status = STATUS_NO_MEM;
         // -----------------------

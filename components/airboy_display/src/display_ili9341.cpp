@@ -11,9 +11,9 @@
 
 #include <cstring>
 
-namespace airboy 
+namespace arb 
 {
-    DisplayILI9341::DisplayILI9341()
+    DisplayILI9341::DisplayILI9341() : Display(Vector2i(320, 240))
     {
         gpio_config_t io_conf = {};
         memset(&io_conf, 0, sizeof(gpio_config_t));
@@ -64,29 +64,27 @@ namespace airboy
     {
         uint8_t col_address[] = 
         {
-            static_cast<uint8_t>((current_queue_buffer->offset_x >> 8) & 0xFF),
-            static_cast<uint8_t>(current_queue_buffer->offset_x & 0xFF),
-            static_cast<uint8_t>(((current_queue_buffer->offset_x + current_queue_buffer->width - 1) >> 8) & 0xFF),
-            static_cast<uint8_t>((current_queue_buffer->offset_x + current_queue_buffer->width - 1) & 0xFF)
+            static_cast<uint8_t>((current_queue_buffer->offset.x >> 8) & 0xFF),
+            static_cast<uint8_t>(current_queue_buffer->offset.x & 0xFF),
+            static_cast<uint8_t>(((current_queue_buffer->offset.x + current_queue_buffer->size.x - 1) >> 8) & 0xFF),
+            static_cast<uint8_t>((current_queue_buffer->offset.x + current_queue_buffer->size.x - 1) & 0xFF)
         };
 
         esp_lcd_panel_io_tx_param(this->io, 0x2A, &col_address, 4);
 
         uint8_t row_address[] = 
         {
-            static_cast<uint8_t>((current_queue_buffer->offset_y >> 8) & 0xFF),
-            static_cast<uint8_t>(current_queue_buffer->offset_y & 0xFF),
-            static_cast<uint8_t>(((current_queue_buffer->offset_y + current_queue_buffer->height - 1) >> 8) & 0xFF),
-            static_cast<uint8_t>((current_queue_buffer->offset_y + current_queue_buffer->height - 1) & 0xFF)
+            static_cast<uint8_t>((current_queue_buffer->offset.y >> 8) & 0xFF),
+            static_cast<uint8_t>(current_queue_buffer->offset.y & 0xFF),
+            static_cast<uint8_t>(((current_queue_buffer->offset.y + current_queue_buffer->size.y - 1) >> 8) & 0xFF),
+            static_cast<uint8_t>((current_queue_buffer->offset.y + current_queue_buffer->size.y - 1) & 0xFF)
         };
 
         esp_lcd_panel_io_tx_param(this->io, 0x2B, &row_address, 4);
 
         current_send_buffer = current_queue_buffer;
-
-        ESP_LOGW(DISPLAY_TAG, "sending color: %p", current_queue_buffer);
         
-        esp_lcd_panel_io_tx_color(this->io, 0x2C, current_queue_buffer->buffer, (current_queue_buffer->size * 2));
+        esp_lcd_panel_io_tx_color(this->io, 0x2C, current_queue_buffer->buffer, (current_queue_buffer->lenght * 2));
     }
 
     void DisplayILI9341::init_bus()
@@ -107,22 +105,20 @@ namespace airboy
 		buscfg.max_transfer_sz = 240 * 320 * sizeof(uint16_t);
         buscfg.flags = SPICOMMON_BUSFLAG_OCTAL;
 
-        ESP_LOGW(DISPLAY_TAG, "buffer address %d", buscfg.intr_flags);
-
         ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &buscfg, SPI_DMA_CH_AUTO));
 
         esp_lcd_panel_io_spi_config_t io_config = {};
         memset(&io_config, 0, sizeof(esp_lcd_panel_io_spi_config_t));
         io_config.dc_gpio_num       = 17;
         io_config.cs_gpio_num       = 18;
-        io_config.pclk_hz           = 4000000;
+        io_config.pclk_hz           = 40000000;
         io_config.lcd_cmd_bits      = 8;
         io_config.lcd_param_bits    = 8;
         io_config.spi_mode          = 3; // fastest mode
         io_config.trans_queue_depth = 10;
         io_config.flags.octal_mode  = 1;
-        io_config.cs_ena_pretrans = 16;
-        io_config.cs_ena_posttrans = 16;
+        io_config.cs_ena_pretrans = 0;
+        io_config.cs_ena_posttrans = 0;
         io_config.on_color_trans_done = lcd_trans_done_cb;
         io_config.user_ctx = &current_send_buffer;
 

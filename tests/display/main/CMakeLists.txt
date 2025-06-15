@@ -1,3 +1,3 @@
 idf_component_register(SRCS "main.cpp"
                     INCLUDE_DIRS "."
-                    REQUIRES "airboy_display")
+                    REQUIRES "airboy_display" "airboy_math" "esp_timer")

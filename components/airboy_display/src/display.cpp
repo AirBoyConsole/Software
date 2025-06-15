@@ -1,15 +1,12 @@
 #include "display.hpp"
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/queue.h"
-#include "freertos/idf_additions.h"
-
-namespace airboy 
+namespace arb 
 {
-    Display::Display()
+    Display::Display(Vector2i size)
     {
         status = STATUS_OK;
+
+        this->size = size;
 
         buffer_queue = xQueueCreate(10, sizeof(FrameBuffer *));
         if (buffer_queue == nullptr)
@@ -26,11 +23,14 @@ namespace airboy
         return status;
     }
 
-    void Display::add_buffer_queue(FrameBuffer* buffer)
+    Vector2i Display::get_size() const
     {
-        ESP_LOGI(DISPLAY_TAG, "adding buffer %p, to queue", buffer);
+        return size;
+    }
 
-        if (xSemaphoreTake(buffer->mutex, portMAX_DELAY) == pdTRUE)
+    void Display::add_buffer_queue(FrameBuffer* buffer) const
+    {
+        if (xSemaphoreTake(buffer->mutex, pdMS_TO_TICKS(10)) == pdTRUE)
             if (xQueueSend(buffer_queue, &buffer, pdMS_TO_TICKS(10)) != pdTRUE)
                 xSemaphoreGive(buffer->mutex);
     }
